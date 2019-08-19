@@ -2,7 +2,7 @@ stages:
 - name: compile
   steps:
   - runScriptConfig:
-      image: mcr.microsoft.com/dotnet/core/aspnet:2.2-stretch-slim
+      image: mcr.microsoft.com/dotnet/core/sdk:2.2-stretch
       shellScript: dotnet build d.csproj
 timeout: 60
 notification: {}
