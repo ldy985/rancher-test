@@ -10,7 +10,8 @@ stages:
       dockerfilePath: ./WebApplication1/Dockerfile
       buildContext: .
       tag: rekrut/web:prod
-      registry: 127.0.0.1:34171
+      pushRemote: true
+      registry: index.docker.io
 - name: deploy
   steps:
   - applyYamlConfig:
