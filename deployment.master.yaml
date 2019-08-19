@@ -1,10 +1,10 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: webserver-service
+  name: ${CICD_GIT_BRANCH}-webserver-service
 spec:
   selector:
-    app: webserver
+    app: ${CICD_GIT_BRANCH}-webserver
   type: NodePort
   ports:
     - protocol: TCP
@@ -14,11 +14,11 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: webserver
+  name: ${CICD_GIT_BRANCH}-webserver
   labels: 
-    app: webserver 
+    app: ${CICD_GIT_BRANCH}-webserver 
 spec:
-  replicas: 10 
+  replicas: 3 
   selector: 
     matchLabels: 
       app: webserver 
@@ -30,11 +30,11 @@ spec:
   template: 
     metadata: 
       labels: 
-        app: webserver 
+        app: ${CICD_GIT_BRANCH}-webserver 
     spec:
       containers:
-      - name: webserver
-        image: ${CICD_IMAGE}:prod-${CICD_EXECUTION_SEQUENCE}
+      - name: ${CICD_GIT_BRANCH}-webserver
+        image: ${CICD_IMAGE}:${CICD_GIT_BRANCH}-${CICD_EXECUTION_SEQUENCE}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -62,14 +62,14 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: webserver-ingress
+  name: ${CICD_GIT_BRANCH}-webserver-ingress
   labels:
-    app: webserver 
+    app: ${CICD_GIT_BRANCH}-webserver 
 spec:
   rules:
   - host: xip.io
     http:
       paths:
       - backend:
-          serviceName: webserver-service
+          serviceName: ${CICD_GIT_BRANCH}-webserver-service
           servicePort: 80

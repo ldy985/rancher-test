@@ -1,0 +1,75 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${CICD_GIT_BRANCH}-webserver-service
+spec:
+  selector:
+    app: ${CICD_GIT_BRANCH}-webserver
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${CICD_GIT_BRANCH}-webserver
+  labels: 
+    app: ${CICD_GIT_BRANCH}-webserver 
+spec:
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: webserver 
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template: 
+    metadata: 
+      labels: 
+        app: ${CICD_GIT_BRANCH}-webserver 
+    spec:
+      containers:
+      - name: ${CICD_GIT_BRANCH}-webserver
+        image: ${CICD_IMAGE}:${CICD_GIT_BRANCH}-${CICD_EXECUTION_SEQUENCE}
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 1
+          timeoutSeconds: 2
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 2
+          timeoutSeconds: 2
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ${CICD_GIT_BRANCH}-webserver-ingress
+  labels:
+    app: ${CICD_GIT_BRANCH}-webserver 
+spec:
+  rules:
+  - host: xip.io
+    http:
+      paths:
+      - backend:
+          serviceName: ${CICD_GIT_BRANCH}-webserver-service
+          servicePort: 80
