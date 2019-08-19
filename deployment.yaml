@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: webserver-service
+  name: ${CICD_GIT_REPO_NAME}-service
 spec:
   selector:
     app: webserver
@@ -14,23 +14,26 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-webserver
-  labels:
-    app: webserver
+  name: ${CICD_GIT_REPO_NAME}
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: webserver
   template:
-    metadata:
-      labels:
-        app: webserver
     spec:
-      imagePullSecrets:
-      - name: pipeline-docker-registry
       containers:
-      - name: webserver
+      - name: ${CICD_GIT_REPO_NAME}
         image: ${CICD_IMAGE}:prod-${CICD_EXECUTION_SEQUENCE}
         ports:
         - containerPort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ${CICD_GIT_REPO_NAME}-ingress
+spec:
+  rules:
+  - host: xip.io
+    http:
+      paths:
+      - backend:
+          serviceName: ${CICD_GIT_REPO_NAME}-service
+          servicePort: 80
