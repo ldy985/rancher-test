@@ -9,6 +9,8 @@ stages:
   - publishImageConfig:
       dockerfilePath: ./WebApplication1/Dockerfile
       buildContext: .
+      tag: rekrut/WebApplication1:prod
+      registry: 127.0.0.1:34171
 - name: deploy
   steps:
   - applyYamlConfig:
