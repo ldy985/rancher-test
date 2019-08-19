@@ -18,10 +18,15 @@ metadata:
   labels: 
     app: webserver 
 spec:
-  replicas: 1 
+  replicas: 10 
   selector: 
     matchLabels: 
       app: webserver 
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
   template: 
     metadata: 
       labels: 
@@ -30,8 +35,29 @@ spec:
       containers:
       - name: webserver
         image: ${CICD_IMAGE}:prod-${CICD_EXECUTION_SEQUENCE}
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 1
+          timeoutSeconds: 2
         ports:
         - containerPort: 80
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 2
+          timeoutSeconds: 2
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
