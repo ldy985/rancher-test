@@ -12165,11 +12165,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\kube\\d\\scr\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
+      "projectUniqueName": "C:\\kube\\d\\WebApplication1\\WebApplication1.csproj",
       "projectName": "WebApplication1",
-      "projectPath": "c:\\kube\\d\\scr\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
+      "projectPath": "C:\\kube\\d\\WebApplication1\\WebApplication1.csproj",
       "packagesPath": "C:\\Users\\ldy\\.nuget\\packages\\",
-      "outputPath": "c:\\kube\\d\\scr\\WebApplication1\\WebApplication1\\obj\\",
+      "outputPath": "C:\\kube\\d\\WebApplication1\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -12222,10 +12222,16 @@
           }
         },
         "imports": [
-          "net461"
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
         ],
         "assetTargetFallback": true,
-        "warn": true
+        "warn": true,
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100-preview8-013656\\RuntimeIdentifierGraph.json"
       }
     }
   }
