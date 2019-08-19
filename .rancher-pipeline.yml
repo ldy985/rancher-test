@@ -9,12 +9,22 @@ stages:
   - publishImageConfig:
       dockerfilePath: ./WebApplication1/Dockerfile
       buildContext: .
-      tag: ldy985/rekrut:prod-${CICD_EXECUTION_SEQUENCE}
+      tag: ldy985/rekrut:${CICD_GIT_BRANCH}-${CICD_EXECUTION_SEQUENCE}
       pushRemote: true
       registry: index.docker.io
+    when:
+      branch:
+        include:
+        - master
+        - develop
 - name: deploy
   steps:
   - applyYamlConfig:
-      path: ./deployment.yaml
+      path: ./deployment.${CICD_GIT_BRANCH}.yaml
+    when:
+      branch:
+        include:
+        - master
+        - develop
 timeout: 60
 notification: {}
