@@ -1,0 +1,8 @@
+stages:
+- name: compile
+  steps:
+  - runScriptConfig:
+      image: mcr.microsoft.com/dotnet/core/aspnet:2.2-stretch-slim
+      shellScript: dotnet build d.csproj
+timeout: 60
+notification: {}
