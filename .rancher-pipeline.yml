@@ -9,7 +9,7 @@ stages:
   - publishImageConfig:
       dockerfilePath: ./WebApplication1/Dockerfile
       buildContext: .
-      tag: rekrut/web:prod
+      tag: ldy985/rekrut:prod
       pushRemote: true
       registry: index.docker.io
 - name: deploy
