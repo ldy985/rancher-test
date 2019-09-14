@@ -10,6 +10,7 @@ stages:
       dockerfilePath: ./WebApplication1/Dockerfile
       buildContext: .
       tag: ldy985/rekrut:${CICD_GIT_BRANCH}-${CICD_EXECUTION_SEQUENCE}
+      pushRemote: true
       registry: index.docker.io
     when:
       branch:
