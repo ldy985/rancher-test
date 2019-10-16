@@ -1,0 +1,6 @@
+version: '2.3'
+
+services:
+  admin:
+    image: index.docker.io/rfit/images:rf-team-webapp-production-latest
+

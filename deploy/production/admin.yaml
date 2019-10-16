@@ -1,0 +1,109 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: admin-config-production
+  namespace: rekrut
+  labels:
+    app: rf-rekrut-admin-production
+data:
+  Booking__BaseUri: https://rekrut-booker.roskilde-festival.dk/Home/Index/
+  Login__SignedOutRedirectUri: https://rekrut-admin.roskilde-festival.dk/
+  Mail__ApplicantBaseUrl: https://rekrut.roskilde-festival.dk
+  Mail__StaticFields__environment: production
+  People__ApiKey: EECA2A1A-A058-49E4-914D-9731C2E6C2A1
+  People__BaseUrl: https://people-vol.roskilde-festival.dk/Api
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rf-rekrut-admin-production-service
+  namespace: rekrut
+spec:
+  selector:
+    app: rf-rekrut-admin-production
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rf-rekrut-admin-production
+  namespace: rekrut
+  labels:
+    app: rf-rekrut-admin-production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rf-rekrut-admin-production
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: rf-rekrut-admin-production
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+                name: admin-web-production
+                optional: false
+        - configMapRef:
+                name: webenv-config-production
+                optional: false
+        - configMapRef:
+                name: admin-config-base-production
+                optional: false
+        - configMapRef:
+                name: admin-config-production
+                optional: false
+        name: rf-rekrut-admin-production
+        image: index.docker.io/rfit/images:rf-rekrut-admin-production-latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 1
+          timeoutSeconds: 2
+        ports:
+          - containerPort: 80
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 2
+          timeoutSeconds: 2
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rf-rekrut-admin-production-ingress
+  namespace: rekrut
+  labels:
+    app: rf-rekrut-admin-production
+  annotations:
+    traefik.ingress.kubernetes.io/redirect-entry-point: https
+spec:
+  rules:
+    - host: rekrut-admin.roskilde-festival.dk
+      http:
+        paths:
+          - backend:
+              serviceName: rf-rekrut-admin-production-service
+              servicePort: 80

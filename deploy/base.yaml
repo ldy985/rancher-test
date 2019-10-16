@@ -1,0 +1,29 @@
+#Ensures the namespace is created
+apiVersion: v1
+kind: Namespace
+metadata: 
+  name: team
+  labels: 
+    name: team
+---
+#Adds a DNS record for the shared Mysql server
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: team
+spec:
+  externalName: mysql.shared.svc.cluster.local
+  type: ExternalName
+---
+#Creates a list of environment variables that we can reference later
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config-base-${CICD_GIT_BRANCH}
+  namespace: team
+  labels:
+    app: rf-team-web-${CICD_GIT_BRANCH}
+data:
+  IMPORTANT__ENVIRONMENTVAR: hello
+---

@@ -1,0 +1,37 @@
+services:
+  - docker:dind
+
+stages:
+  - publish-docker
+  - trigger-deploy
+
+.publish-template: &publish-template
+  image: tmaier/docker-compose:latest
+  stage: publish-docker
+  script:
+    - docker-compose -f docker-compose.build.yml $EXTRA_ARGS build --parallel
+    - docker login -u $RFIT_DOCKER_USER -p $RFIT_DOCKER_PASS $CI_REGISTRY
+    - docker-compose -f docker-compose.build.yml $EXTRA_ARGS push
+
+docker-staging:
+  <<: *publish-template
+  only:
+    - staging
+
+docker-production:
+  <<: *publish-template
+  variables:
+    EXTRA_ARGS: -f docker-compose.build.production.yml
+  only:
+    - production
+
+# Sends a web trigger to run the deploy pipeline on rancher.
+deploy-trigger:
+  image: pstauffer/curl:latest
+  stage: trigger-deploy
+  script:
+    - "curl -sS -u \"$CATTLE_ACCESS_KEY:$CATTLE_SECRET_KEY\" -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{\"branch\":\"'\"$CI_COMMIT_REF_NAME\"'\"}' 'https://deploy.rfit.dk/v3/project/c-7hxdx:p-l7zj6/pipelines/p-l7zj6:p-qx56l?action=run'"
+
+  only:
+    - staging
+    - production

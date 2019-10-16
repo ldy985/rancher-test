@@ -1,0 +1,8 @@
+version: "2.3"
+
+services:
+  admin:
+    image: index.docker.io/rfit/images:rf-team-webapp-staging-latest
+    build:
+      context: .
+      dockerfile: RF.Team.Webapp/Dockerfile
