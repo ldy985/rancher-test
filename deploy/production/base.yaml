@@ -7,4 +7,3 @@ metadata:
     app: rf-rekrut-admin-production
 data:
   ASPNETCORE_ENVIRONMENT: production
-  

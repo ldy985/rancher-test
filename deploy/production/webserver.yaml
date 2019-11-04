@@ -1,45 +1,41 @@
-
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: admin-config-production
-  namespace: rekrut
+  name: webapp-config-production
+  namespace: team
   labels:
-    app: rf-rekrut-admin-production
+    app: rf-team-webapp-production
 data:
-  Booking__BaseUri: https://rekrut-booker.roskilde-festival.dk/Home/Index/
-  Login__SignedOutRedirectUri: https://rekrut-admin.roskilde-festival.dk/
-  Mail__ApplicantBaseUrl: https://rekrut.roskilde-festival.dk
-  Mail__StaticFields__environment: production
-  People__ApiKey: EECA2A1A-A058-49E4-914D-9731C2E6C2A1
-  People__BaseUrl: https://people-vol.roskilde-festival.dk/Api
+  MYSQL__PORT: 1234
 ---
+# This exposes the webapp internally in the cluster at rf-team-webapp-production-service.team.svc.cluster.local but it also exposes the webapp to the ingress service.
 kind: Service
 apiVersion: v1
 metadata:
-  name: rf-rekrut-admin-production-service
-  namespace: rekrut
+  name: rf-team-webapp-production-service
+  namespace: team
 spec:
   selector:
-    app: rf-rekrut-admin-production
+    app: rf-team-webapp-production
   type: NodePort
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
 ---
+# This is the actual deployment, it specifies which container and how many to run.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rf-rekrut-admin-production
-  namespace: rekrut
+  name: rf-team-webapp-production
+  namespace: team
   labels:
-    app: rf-rekrut-admin-production
+    app: rf-team-webapp-production
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rf-rekrut-admin-production
+      app: rf-team-webapp-production
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -48,62 +44,75 @@ spec:
   template:
     metadata:
       labels:
-        app: rf-rekrut-admin-production
+        app: rf-team-webapp-production
     spec:
       containers:
-      - envFrom:
-        - configMapRef:
-                name: admin-web-production
+        - envFrom:
+            # Here we import the previously defined config maps. They are imported as environment variable but can also be imported as files.
+            - configMapRef:
+                name: web-config-base-production
                 optional: false
-        - configMapRef:
+            - configMapRef:
                 name: webenv-config-production
                 optional: false
-        - configMapRef:
-                name: admin-config-base-production
+            - configMapRef:
+                name: webapp-config-base-production
                 optional: false
-        - configMapRef:
-                name: admin-config-production
+            - configMapRef:
+                name: webapp-config-production
                 optional: false
-        name: rf-rekrut-admin-production
-        image: index.docker.io/rfit/images:rf-rekrut-admin-production-latest
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /
-            port: 80
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 2
-          successThreshold: 1
-          timeoutSeconds: 2
-        ports:
-          - containerPort: 80
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /
-            port: 80
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 2
-          successThreshold: 2
-          timeoutSeconds: 2
+          name: rf-team-webapp-production
+          image: registry.gitlab.com/rfit/docker-images/team/webapp:production-latest
+          imagePullPolicy: IfNotPresent
+          # Here we tell kubernetes that it should send a HTTP request to / to see if the webserver is up.
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 2
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 2
+            successThreshold: 2
+            timeoutSeconds: 2
+          # It is important to specify how many resources the container is expected to use. see https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-cpu
+          resources:
+            limits:
+              cpu: 500m
+              memory: 300M
+            requests:
+              cpu: 50m
+              memory: 100M
+      imagePullSecrets:
+        - name: gitlab-registry
 ---
+# Exposes the webapp service on team-webapp-production.rfit.dk and redirects to https
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: rf-rekrut-admin-production-ingress
-  namespace: rekrut
+  name: rf-team-webapp-production-ingress
+  namespace: team
   labels:
-    app: rf-rekrut-admin-production
+    app: rf-team-webapp-production
   annotations:
     traefik.ingress.kubernetes.io/redirect-entry-point: https
 spec:
   rules:
-    - host: rekrut-admin.roskilde-festival.dk
+    - host: team-webapp-production.rfit.dk
       http:
         paths:
           - backend:
-              serviceName: rf-rekrut-admin-production-service
+              serviceName: rf-team-webapp-production-service
               servicePort: 80
