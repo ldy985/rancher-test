@@ -2,8 +2,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: webenv-config-production
-  namespace: rekrut
+  namespace: team
   labels:
-    app: rf-rekrut-admin-production
+    app: rf-team-admin-production
 data:
   ASPNETCORE_ENVIRONMENT: production

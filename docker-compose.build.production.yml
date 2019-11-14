@@ -2,5 +2,5 @@ version: '2.3'
 
 services:
   admin:
-    image: index.docker.io/rfit/images:rf-team-webapp-production-latest
+    image: registry.gitlab.com/rfit/docker-images/team/webapp:production-latest
 
